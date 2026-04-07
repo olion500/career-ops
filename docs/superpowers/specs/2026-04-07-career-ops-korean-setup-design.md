@@ -27,7 +27,7 @@ career-ops is in fresh state (no onboarding done). The 4 onboarding files are mi
 | 4 | 기업/ relationship | **A modified**: one-time read at seed, no sync, no further coupling |
 | 5 | CV format | **A**: Korean dual (이력서.md + 포트폴리오.md), English fallback for global companies |
 | 6 | PDF generation | **B**: Markdown only at first, PDF deferred |
-| Boards | Korean job boards | 원티드 + 점핏 + 지킹 |
+| Boards | Korean job boards | 원티드 + 점핏 + 지킹 + 인디스워크 |
 
 ## Architecture
 
@@ -120,6 +120,9 @@ boards:
     type: aggregator
   - name: 지킹
     url: https://zighang.com/recruitment
+    type: aggregator
+  - name: 인디스워크
+    url: https://inthiswork.com/it
     type: aggregator
 
 title_filter:
