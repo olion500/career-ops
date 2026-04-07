@@ -63,3 +63,34 @@ body`;
   assert.deepEqual(record.stack, []);
   assert.equal(record.rawStatus, '');
 });
+
+import { renderPortalsYml } from '../../scripts/seed/render-portals.mjs';
+
+test('renderPortalsYml emits companies and boards sections', () => {
+  const companies = [
+    { name: '딜라이트룸', slug: 'delight-room', url: 'https://example.com/dr', stack: ['Golang', 'K8s'] },
+    { name: '큐픽스', slug: 'cupix', url: 'https://example.com/cx', stack: ['Ruby', 'Rails'] },
+  ];
+  const yml = renderPortalsYml(companies);
+  // Companies block
+  assert.match(yml, /tracked_companies:/);
+  assert.match(yml, /name: 딜라이트룸/);
+  assert.match(yml, /slug: delight-room/);
+  assert.match(yml, /careers_url: "https:\/\/example\.com\/dr"/);
+  assert.match(yml, /tags: \[Golang, K8s\]/);
+  // Boards block — must include all 4
+  assert.match(yml, /name: 원티드/);
+  assert.match(yml, /name: 점핏/);
+  assert.match(yml, /name: 지킹/);
+  assert.match(yml, /name: 인디스워크/);
+  // Title filter — Korean backend keywords
+  assert.match(yml, /title_filter:/);
+  assert.match(yml, /"Backend"/);
+  assert.match(yml, /"Kubernetes"/);
+});
+
+test('renderPortalsYml escapes companies with empty stack gracefully', () => {
+  const companies = [{ name: '큐픽스', slug: 'cupix', url: 'https://x.com', stack: [] }];
+  const yml = renderPortalsYml(companies);
+  assert.match(yml, /tags: \[\]/);
+});
