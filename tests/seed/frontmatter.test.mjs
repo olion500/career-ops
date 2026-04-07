@@ -61,3 +61,14 @@ body`;
   const { data } = parseFrontmatter(input);
   assert.equal(data.updated, '2026-02-28');
 });
+
+test('preserves colons inside values (URLs)', () => {
+  const input = `---
+url: https://team.alar.my/job_posting/fYEkfMEa
+github: https://github.com/olion500
+---
+body`;
+  const { data } = parseFrontmatter(input);
+  assert.equal(data.url, 'https://team.alar.my/job_posting/fYEkfMEa');
+  assert.equal(data.github, 'https://github.com/olion500');
+});
