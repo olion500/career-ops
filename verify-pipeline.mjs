@@ -28,17 +28,28 @@ const STATES_FILE = existsSync(join(CAREER_OPS, 'templates/states.yml'))
   ? join(CAREER_OPS, 'templates/states.yml')
   : join(CAREER_OPS, 'states.yml');
 
-const CANONICAL_STATUSES = [
-  'evaluada', 'aplicado', 'respondido', 'entrevista',
-  'oferta', 'rechazado', 'descartado', 'no aplicar',
-];
-
-const ALIASES = {
-  'enviada': 'aplicado', 'aplicada': 'aplicado', 'applied': 'aplicado', 'sent': 'aplicado',
-  'cerrada': 'descartado', 'descartada': 'descartado', 'cancelada': 'descartado',
-  'rechazada': 'rechazado',
-  'no_aplicar': 'no aplicar', 'skip': 'no aplicar', 'monitor': 'no aplicar',
-};
+// Load canonical statuses from states.yml (single source of truth).
+// Collects all `label:` values and `aliases: [...]` entries into a Set.
+function loadKnownStatuses() {
+  const known = new Set();
+  if (!existsSync(STATES_FILE)) return known;
+  const text = readFileSync(STATES_FILE, 'utf-8');
+  for (const line of text.split('\n')) {
+    const labelMatch = line.match(/^\s*label:\s*(.+?)\s*$/);
+    if (labelMatch) {
+      known.add(labelMatch[1].toLowerCase());
+      continue;
+    }
+    const aliasMatch = line.match(/^\s*aliases:\s*\[(.+)\]\s*$/);
+    if (aliasMatch) {
+      for (const a of aliasMatch[1].split(',')) {
+        known.add(a.trim().toLowerCase());
+      }
+    }
+  }
+  return known;
+}
+const KNOWN_STATUSES = loadKnownStatuses();
 
 let errors = 0;
 let warnings = 0;
@@ -79,7 +90,7 @@ for (const e of entries) {
   // Strip trailing dates
   const statusOnly = clean.replace(/\s+\d{4}-\d{2}-\d{2}.*$/, '').trim();
 
-  if (!CANONICAL_STATUSES.includes(statusOnly) && !ALIASES[statusOnly]) {
+  if (!KNOWN_STATUSES.has(statusOnly)) {
     error(`#${e.num}: Non-canonical status "${e.status}"`);
     badStatuses++;
   }
@@ -132,7 +143,7 @@ if (brokenReports === 0) ok('All report links valid');
 let badScores = 0;
 for (const e of entries) {
   const s = e.score.replace(/\*\*/g, '').trim();
-  if (!/^\d+\.?\d*\/5$/.test(s) && s !== 'N/A' && s !== 'DUP') {
+  if (!/^\d+\.?\d*\/5$/.test(s) && s !== 'N/A' && s !== 'DUP' && s !== '-') {
     error(`#${e.num}: Invalid score format: "${e.score}"`);
     badScores++;
   }
