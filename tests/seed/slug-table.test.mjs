@@ -2,14 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SLUG_TABLE, slugFor, allSlugs } from '../../scripts/seed/slug-table.mjs';
 
-test('slug table covers all 33 known companies', () => {
-  assert.equal(Object.keys(SLUG_TABLE).length, 33);
-});
-
-test('all slugs are unique (no collisions)', () => {
-  const slugs = allSlugs();
-  const unique = new Set(slugs);
-  assert.equal(unique.size, slugs.length, `Duplicate slug detected in ${slugs.join(', ')}`);
+test('slug table covers 33 unique companies (aliases allowed)', () => {
+  const uniqueSlugs = new Set(allSlugs());
+  assert.equal(uniqueSlugs.size, 33);
 });
 
 test('all slugs are kebab-case ASCII', () => {

@@ -51,6 +51,45 @@ body`;
   assert.throws(() => parseCompany(input), /No slug mapping/);
 });
 
+test('parses new schema (company_name / tech_stack / job_board / apply_status / job_open)', () => {
+  const input = `---
+company_name: AB180
+field: 광고 (MMP)
+location: 강남역
+tech_stack:
+  - Kafka
+  - Elasticsearch
+  - FastAPI
+job_title: Backend Engineer - Data Pipeline
+job_board: https://recruit.ab180.co/o/91715
+apply_status: 미지원
+job_open: true
+---
+# 회사
+본문`;
+  const record = parseCompany(input);
+  assert.equal(record.name, 'AB180');
+  assert.equal(record.slug, 'ab180');
+  assert.deepEqual(record.stack, ['Kafka', 'Elasticsearch', 'FastAPI']);
+  assert.equal(record.job, 'Backend Engineer - Data Pipeline');
+  assert.equal(record.url, 'https://recruit.ab180.co/o/91715');
+  assert.equal(record.rawStatus, '미지원');
+  assert.equal(record.open, true);
+});
+
+test('strips parenthetical English from company_name for slug lookup', () => {
+  const input = `---
+company_name: 가우스랩스 (GaussLabs)
+tech_stack:
+  - Terraform
+job_board: https://example.com
+---
+body`;
+  const record = parseCompany(input);
+  assert.equal(record.name, '가우스랩스');
+  assert.equal(record.slug, 'gauss-labs');
+});
+
 test('handles missing optional fields gracefully', () => {
   const input = `---
 company: 큐픽스

@@ -21,13 +21,30 @@ export function parseFrontmatter(text) {
   const body = lines.slice(endIdx + 1).join('\n');
   const data = {};
 
-  for (const line of fmLines) {
+  for (let i = 0; i < fmLines.length; i++) {
+    const line = fmLines[i];
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
+    // List item line — handled by lookahead below; skip if encountered standalone.
+    if (line.match(/^\s+-\s/)) continue;
     const colonIdx = trimmed.indexOf(':');
     if (colonIdx === -1) continue;
     const key = trimmed.slice(0, colonIdx).trim();
     const rawValue = trimmed.slice(colonIdx + 1).trim();
+
+    // Multi-line block list: empty value followed by indented `- item` lines.
+    if (rawValue === '' && i + 1 < fmLines.length && fmLines[i + 1].match(/^\s+-\s/)) {
+      const items = [];
+      let j = i + 1;
+      while (j < fmLines.length && fmLines[j].match(/^\s+-\s/)) {
+        items.push(fmLines[j].replace(/^\s+-\s+/, '').trim().replace(/^["']|["']$/g, ''));
+        j++;
+      }
+      data[key] = items;
+      i = j - 1;
+      continue;
+    }
+
     data[key] = parseValue(rawValue);
   }
 

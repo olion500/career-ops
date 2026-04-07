@@ -62,6 +62,31 @@ body`;
   assert.equal(data.updated, '2026-02-28');
 });
 
+test('parses multi-line YAML list (block style with - items)', () => {
+  const input = `---
+tech_stack:
+  - Kafka
+  - Elasticsearch
+  - FastAPI
+job_title: Backend Engineer
+---
+body`;
+  const { data } = parseFrontmatter(input);
+  assert.deepEqual(data.tech_stack, ['Kafka', 'Elasticsearch', 'FastAPI']);
+  assert.equal(data.job_title, 'Backend Engineer');
+});
+
+test('handles empty multi-line list (key with no items)', () => {
+  const input = `---
+tags:
+job_title: Backend
+---
+body`;
+  const { data } = parseFrontmatter(input);
+  // Empty value followed by next key — tags should be '' (existing scalar behavior)
+  assert.equal(data.job_title, 'Backend');
+});
+
 test('preserves colons inside values (URLs)', () => {
   const input = `---
 url: https://team.alar.my/job_posting/fYEkfMEa

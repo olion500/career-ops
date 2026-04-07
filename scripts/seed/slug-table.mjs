@@ -39,6 +39,9 @@ export const SLUG_TABLE = {
   'AB180': 'ab180',
   'AFI': 'afi',
   'LinqAlpha': 'linq-alpha',
+  // Aliases — alternate names found in company_name fields
+  '레브잇 (Revit) - 올웨이즈': 'levit-always',
+  '인프랩': 'inflearn',
 };
 
 export function slugFor(koreanName) {
