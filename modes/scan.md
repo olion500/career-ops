@@ -21,9 +21,22 @@ Leer `portals.yml` que contiene:
 - `tracked_companies`: Empresas específicas con `careers_url` para navegación directa
 - `title_filter`: Keywords positive/negative/seniority_boost para filtrado de títulos
 
-## Estrategia de descubrimiento (3 niveles)
+## Estrategia de descubrimiento (4 niveles)
 
-### Nivel 1 — Playwright directo (PRINCIPAL)
+### Nivel 0 — Korean job boards via direct API (DESCUBRIMIENTO MASIVO)
+
+**Ejecutar PRIMERO siempre:** `node scan-boards.mjs`
+
+Este script hace fetch directo (sin Playwright) a las APIs JSON de **원티드, 점핏, 지킹** y parsea el HTML SSR de **인디스워크**. Aplica `title_filter` de portals.yml, deduplica contra scan-history.tsv + applications.md + pipeline.md, y añade nuevas ofertas a `data/pipeline.md`.
+
+- **Ventaja:** No consume Playwright (rápido, paralelizable, sin race conditions)
+- **Cobertura:** Centenares de ofertas backend/infra/devops por scan
+- **Uso:** `node scan-boards.mjs [--dry-run] [--limit=N]` (default limit=50 por board)
+- **Output:** Mismo formato TSV → scan-history.tsv y `- [ ] url | company | title` → pipeline.md
+
+Después de Nivel 0, ejecutar Niveles 1-3 para empresas específicas que no estén en los boards.
+
+### Nivel 1 — Playwright directo (EMPRESAS TRACKED)
 
 **Para cada empresa en `tracked_companies`:** Navegar a su `careers_url` con Playwright (`browser_navigate` + `browser_snapshot`), leer TODOS los job listings visibles, y extraer título + URL de cada uno. Este es el método más fiable porque:
 - Ve la página en tiempo real (no resultados cacheados de Google)
@@ -42,6 +55,7 @@ Para empresas con Greenhouse, la API JSON (`boards-api.greenhouse.io/v1/boards/{
 Los `search_queries` con `site:` filters cubren portales de forma transversal (todos los Ashby, todos los Greenhouse, etc.). Útil para descubrir empresas NUEVAS que aún no están en `tracked_companies`, pero los resultados pueden estar desfasados.
 
 **Prioridad de ejecución:**
+0. Nivel 0: `node scan-boards.mjs` → boards coreanos (원티드/점핏/지킹/인디스워크)
 1. Nivel 1: Playwright → todas las `tracked_companies` con `careers_url`
 2. Nivel 2: API → todas las `tracked_companies` con `api:`
 3. Nivel 3: WebSearch → todos los `search_queries` con `enabled: true`
