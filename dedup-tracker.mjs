@@ -11,6 +11,7 @@
 
 import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { normalizeCompany, roleMatch, statusRank } from './lib/states.mjs';
 
 const CAREER_OPS = new URL('.', import.meta.url).pathname;
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
@@ -18,42 +19,6 @@ const APPS_FILE = existsSync(join(CAREER_OPS, 'data/applications.md'))
   ? join(CAREER_OPS, 'data/applications.md')
   : join(CAREER_OPS, 'applications.md');
 const DRY_RUN = process.argv.includes('--dry-run');
-
-// Status advancement order (higher = more advanced in pipeline)
-// Aplicado > Rechazado because active application > terminal state
-const STATUS_RANK = {
-  'no aplicar': 0,
-  'descartado': 0,
-  'rechazado': 1,  // Terminal — below active states
-  'evaluada': 2,
-  'aplicado': 3,
-  'respondido': 4,
-  'entrevista': 5,
-  'oferta': 6,
-};
-
-function normalizeCompany(name) {
-  return name.toLowerCase()
-    .replace(/[()]/g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/[^a-z0-9 ]/g, '')
-    .trim();
-}
-
-function normalizeRole(role) {
-  return role.toLowerCase()
-    .replace(/[()]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .replace(/[^a-z0-9 /]/g, '')
-    .trim();
-}
-
-function roleMatch(a, b) {
-  const wordsA = normalizeRole(a).split(/\s+/).filter(w => w.length > 3);
-  const wordsB = normalizeRole(b).split(/\s+/).filter(w => w.length > 3);
-  const overlap = wordsA.filter(w => wordsB.some(wb => wb.includes(w) || w.includes(wb)));
-  return overlap.length >= 2;
-}
 
 function parseScore(s) {
   const m = s.replace(/\*\*/g, '').match(/([\d.]+)/);
@@ -139,10 +104,10 @@ for (const [company, companyEntries] of groups) {
     const keeper = cluster[0];
 
     // Check if any removed entry has more advanced status
-    let bestStatusRank = STATUS_RANK[keeper.status.toLowerCase()] || 0;
+    let bestStatusRank = statusRank(keeper.status);
     let bestStatus = keeper.status;
     for (let k = 1; k < cluster.length; k++) {
-      const rank = STATUS_RANK[cluster[k].status.toLowerCase()] || 0;
+      const rank = statusRank(cluster[k].status);
       if (rank > bestStatusRank) {
         bestStatusRank = rank;
         bestStatus = cluster[k].status;

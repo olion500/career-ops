@@ -15,7 +15,8 @@
  */
 
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, renameSync, existsSync } from 'fs';
-import { join, basename } from 'path';
+import { join } from 'path';
+import { loadStates, normalizeStatus, normalizeCompany, roleMatch } from './lib/states.mjs';
 
 const CAREER_OPS = new URL('.', import.meta.url).pathname;
 // Support both layouts: data/applications.md (boilerplate) and applications.md (original)
@@ -27,45 +28,29 @@ const MERGED_DIR = join(ADDITIONS_DIR, 'merged');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
 
-// Canonical states and aliases
-const CANONICAL_STATES = ['Evaluada', 'Aplicado', 'Respondido', 'Entrevista', 'Oferta', 'Rechazado', 'Descartado', 'NO APLICAR'];
+// Canonical statuses from templates/states.yml (single source of truth).
+const { aliasMap } = loadStates();
 
 function validateStatus(status) {
-  const clean = status.replace(/\*\*/g, '').replace(/\s+\d{4}-\d{2}-\d{2}.*$/, '').trim();
-  const lower = clean.toLowerCase();
-
-  for (const valid of CANONICAL_STATES) {
-    if (valid.toLowerCase() === lower) return valid;
+  const result = normalizeStatus(status, aliasMap);
+  if (result.unknown) {
+    console.warn(`⚠️  Non-canonical status "${status}" → defaulting to "평가완료"`);
+    return '평가완료';
   }
-
-  // Aliases
-  const aliases = {
-    'enviada': 'Aplicado', 'aplicada': 'Aplicado', 'applied': 'Aplicado', 'sent': 'Aplicado',
-    'cerrada': 'Descartado', 'descartada': 'Descartado', 'cancelada': 'Descartado',
-    'rechazada': 'Rechazado',
-    'no aplicar': 'NO APLICAR', 'no_aplicar': 'NO APLICAR', 'skip': 'NO APLICAR', 'monitor': 'NO APLICAR',
-    'condicional': 'Evaluada', 'hold': 'Evaluada', 'evaluar': 'Evaluada', 'verificar': 'Evaluada',
-    'geo blocker': 'NO APLICAR',
-  };
-
-  if (aliases[lower]) return aliases[lower];
-
-  // DUPLICADO/Repost → Descartado
-  if (/^(duplicado|dup|repost)/i.test(lower)) return 'Descartado';
-
-  console.warn(`⚠️  Non-canonical status "${status}" → defaulting to "Evaluada"`);
-  return 'Evaluada';
+  return result.status;
 }
 
-function normalizeCompany(name) {
-  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Heuristic: does this column value look like a canonical status?
+function looksLikeStatus(val) {
+  const clean = val.replace(/\*\*/g, '').trim().toLowerCase();
+  if (aliasMap.has(clean)) return true;
+  if (/^(duplicado|dup\b|repost)/i.test(clean)) return true;
+  return false;
 }
 
-function roleFuzzyMatch(a, b) {
-  const wordsA = a.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-  const wordsB = b.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-  const overlap = wordsA.filter(w => wordsB.some(wb => wb.includes(w) || w.includes(wb)));
-  return overlap.length >= 2;
+function looksLikeScore(val) {
+  const v = val.trim();
+  return /^\d+\.?\d*\/5$/.test(v) || v === 'N/A' || v === 'DUP';
 }
 
 function extractReportNum(reportStr) {
@@ -128,27 +113,22 @@ function parseTsvContent(content, filename) {
       return null;
     }
 
-    // Detect column order: some TSVs have (status, score), others have (score, status)
-    // Heuristic: if col4 looks like a score and col5 looks like a status, they're swapped
+    // Detect column order: some TSVs have (status, score), others have (score, status).
     const col4 = parts[4].trim();
     const col5 = parts[5].trim();
-    const col4LooksLikeScore = /^\d+\.?\d*\/5$/.test(col4) || col4 === 'N/A' || col4 === 'DUP';
-    const col5LooksLikeScore = /^\d+\.?\d*\/5$/.test(col5) || col5 === 'N/A' || col5 === 'DUP';
-    const col4LooksLikeStatus = /^(evaluada|aplicado|respondido|entrevista|oferta|rechazado|descartado|no aplicar|cerrada|duplicado|repost|condicional|hold|monitor)/i.test(col4);
-    const col5LooksLikeStatus = /^(evaluada|aplicado|respondido|entrevista|oferta|rechazado|descartado|no aplicar|cerrada|duplicado|repost|condicional|hold|monitor)/i.test(col5);
+    const col4Score = looksLikeScore(col4);
+    const col5Score = looksLikeScore(col5);
+    const col4Status = looksLikeStatus(col4);
+    const col5Status = looksLikeStatus(col5);
 
     let statusCol, scoreCol;
-    if (col4LooksLikeStatus && !col4LooksLikeScore) {
-      // Standard format: col4=status, col5=score
+    if (col4Status && !col4Score) {
       statusCol = col4; scoreCol = col5;
-    } else if (col4LooksLikeScore && col5LooksLikeStatus) {
-      // Swapped format: col4=score, col5=status
+    } else if (col4Score && col5Status) {
       statusCol = col5; scoreCol = col4;
-    } else if (col5LooksLikeScore && !col4LooksLikeScore) {
-      // col5 is definitely score → col4 must be status
+    } else if (col5Score && !col4Score) {
       statusCol = col4; scoreCol = col5;
     } else {
-      // Default: standard format (status before score)
       statusCol = col4; scoreCol = col5;
     }
 
@@ -252,7 +232,7 @@ for (const file of tsvFiles) {
     const normCompany = normalizeCompany(addition.company);
     duplicate = existingApps.find(app => {
       if (normalizeCompany(app.company) !== normCompany) return false;
-      return roleFuzzyMatch(addition.role, app.role);
+      return roleMatch(addition.role, app.role);
     });
   }
 
