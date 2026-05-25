@@ -1,56 +1,56 @@
-# Career-Ops — Canonical States (한국 시장)
+# Career-Ops — Canonical States
 # Source of truth for career-ops (writer) and dashboard (reader).
-# Both systems MUST use these exact labels.
+# Both systems MUST use these exact states.
 #
 # Rule: The status field in applications.md must contain EXACTLY
-# one of these labels (case-insensitive). No markdown bold (**),
+# one of these values (case-insensitive). No markdown bold (**),
 # no dates, no extra text. Dates go in the date column.
 
 states:
   - id: evaluated
-    label: 평가완료
-    aliases: [evaluated, evaluada, 평가, 검토중]
-    description: 평가 완료, 지원 결정 대기
+    label: Evaluated
+    aliases: [evaluada]
+    description: Offer evaluated with report, pending decision
     dashboard_group: evaluated
 
   - id: applied
-    label: 지원
-    aliases: [applied, aplicado, 지원완료, 제출]
-    description: 지원서 제출됨
+    label: Applied
+    aliases: [aplicado, enviada, aplicada, sent]
+    description: Application submitted
     dashboard_group: applied
 
   - id: responded
-    label: 응답
-    aliases: [responded, respondido]
-    description: 회사로부터 응답 받음 (면접 전 단계)
+    label: Responded
+    aliases: [respondido]
+    description: Company has responded (not yet interview)
     dashboard_group: responded
 
   - id: interview
-    label: 면접
-    aliases: [interview, entrevista, 인터뷰]
-    description: 면접 진행 중
+    label: Interview
+    aliases: [entrevista]
+    description: Active interview process
     dashboard_group: interview
 
   - id: offer
-    label: 오퍼
-    aliases: [offer, oferta, 합격]
-    description: 오퍼 받음
+    label: Offer
+    aliases: [oferta]
+    description: Offer received
     dashboard_group: offer
 
   - id: rejected
-    label: 불합격
-    aliases: [rejected, rechazado, 불합, 탈락]
-    description: 회사에서 거절
+    label: Rejected
+    aliases: [rechazado, rechazada]
+    description: Rejected by company
     dashboard_group: rejected
 
   - id: discarded
-    label: 보류
-    aliases: [discarded, descartado, 포기, cerrada, cancelada]
-    description: 후보자가 보류 또는 공고 마감
+    label: Discarded
+    aliases: [descartado, descartada, cerrada, cancelada]
+    description: Discarded by candidate or offer closed
     dashboard_group: discarded
 
   - id: skip
     label: SKIP
-    aliases: [skip, no_aplicar, 스킵, monitor]
-    description: 적합하지 않음, 지원하지 않음
+    aliases: [no_aplicar, no aplicar, skip, monitor]
+    description: Doesn't fit, don't apply
     dashboard_group: skip
