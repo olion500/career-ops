@@ -57,21 +57,23 @@ boards:
   - name: 원티드
     url: https://www.wanted.co.kr/search?query=backend
     type: aggregator
-    enabled: true
+    enabled: false
   - name: 점핏
     url: https://jumpit.saramin.co.kr
     type: aggregator
-    enabled: true
+    enabled: false
   - name: 지킹
     url: https://zighang.com/recruitment
     type: aggregator
-    enabled: true
+    enabled: false
   - name: 인디스워크
     url: https://inthiswork.com/it
     type: aggregator
-    enabled: true
+    enabled: false
 
-# Note: Korean job boards are JS-rendered. Use Playwright (already a dependency)
-# in scan mode. First run may need selector adjustments per board.
+# All Korean board collection is disabled pending source-specific access review.
+# Do not fall back to Playwright or private APIs for a blocked source.
+# Use integrations/kr/collect.mjs only for explicitly reviewed sources, then
+# integrations/kr/import.mjs for local JSON normalization and incremental triage.
 `;
 }

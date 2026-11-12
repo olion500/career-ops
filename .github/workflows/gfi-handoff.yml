@@ -13,8 +13,7 @@ name: GFI handoff to coding agent
 # El agente se llama `copilot-swe-agent[bot]` (REST) / Bot `copilot-swe-agent` (GraphQL suggestedActors).
 
 on:
-  schedule:
-    - cron: '0 8 * * 2'
+  # Upstream maintenance cron disabled in this personal fork.
   workflow_dispatch:
 
 permissions:

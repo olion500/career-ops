@@ -14,8 +14,7 @@ name: Approve CI for fork PRs
 # vars.TRIAGE_DRY_RUN = "true" -> solo informa en el job summary.
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
+  # Upstream maintenance cron disabled in this personal fork.
   workflow_dispatch:
 
 permissions:

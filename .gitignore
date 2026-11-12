@@ -310,3 +310,6 @@ data/interview-prep/
 .next/
 web/.next/
 web/out/
+
+# Fork-owned extension declarations contain paths only, no candidate data.
+!config/local-paths.txt

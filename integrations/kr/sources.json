@@ -1,0 +1,14 @@
+{
+  "upstream": {
+    "url": "https://github.com/career-ops-hq/career-ops",
+    "commit": "25800070fcac3bbac6611680a189678ab45f4afc",
+    "packageVersion": "1.40.0"
+  },
+  "forkBase": {
+    "url": "https://github.com/olion500/career-ops",
+    "commit": "0ac731c7903377e79736483b694115ca5fa40516"
+  },
+  "implementationBase": "da79fea25964b703267d0881837bf317944f4cb3",
+  "collectionEnabledByDefault": false,
+  "modelCallsByIntegration": false
+}

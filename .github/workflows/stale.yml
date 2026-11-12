@@ -1,7 +1,6 @@
 name: 'Mark stale issues and PRs'
 on:
-  schedule:
-    - cron: '0 6 * * 1' # Every Monday at 6am UTC
+  # Upstream maintenance cron disabled in this personal fork.
   workflow_dispatch:
 
 permissions:

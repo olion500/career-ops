@@ -1,0 +1,7 @@
+integrations/kr/
+scan-boards.mjs
+lib/states.mjs
+scripts/seed-from-obsidian.mjs
+scripts/seed/
+Makefile
+package-lock.json

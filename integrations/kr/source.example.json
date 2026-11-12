@@ -1,0 +1,16 @@
+{
+  "provider": "saramin",
+  "enabled": false,
+  "saramin_keywords": "",
+  "saramin_access_key_env": "SARAMIN_ACCESS_KEY",
+  "max_pages": 1,
+  "access_review": {
+    "allowed": false,
+    "reviewed_at": null,
+    "valid_until": null,
+    "urls": [
+      "https://oapi.saramin.co.kr/guide/job-search"
+    ],
+    "note": "직접 약관·계정 쿼터·접근 범위를 확인한 뒤에만 활성화. 키는 환경변수로만 설정."
+  }
+}

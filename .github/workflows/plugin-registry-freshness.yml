@@ -24,8 +24,7 @@ name: 'Plugin registry freshness'
 # covered by tests/registry-pin-freshness.test.mjs, which test-all discovers
 # and runs on every PR.
 on:
-  schedule:
-    - cron: '0 7 * * 1' # Weekly, Monday 07:00 UTC
+  # Upstream maintenance cron disabled in this personal fork.
   workflow_dispatch:
 
 permissions:

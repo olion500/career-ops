@@ -11,8 +11,7 @@ name: 'PR adoption ladder (labels)'
 # It never comments, never closes a PR and never adds a label.
 
 on:
-  schedule:
-    - cron: '47 5 * * *'
+  # Upstream maintenance cron disabled in this personal fork.
   workflow_dispatch:
 
 permissions:
